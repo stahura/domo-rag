@@ -3,12 +3,12 @@ export interface Domo {
   post: (url: string, body: any) => Promise<any>;
 }
 
-declare global {
-  interface Window {
-    domo: Domo;
-  }
-  const domo: Domo;
-}
+// declare global {
+//   interface Window {
+//     domo: Domo;
+//   }
+//   const domo: Domo;
+// }
 
 // RAG API Types
 export interface RagMatch {

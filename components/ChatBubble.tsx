@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Message, Sender } from '../types';
 import { User, Bot, FileText } from 'lucide-react';
 
@@ -23,22 +24,46 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
         {/* Avatar */}
         <div
           className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${
-            isUser ? 'bg-brand-600 text-white' : 'bg-slate-200 text-slate-600'
+            isUser ? 'bg-brand-600 text-white' : 'bg-slate-200 text-slate-600 overflow-hidden'
           }`}
         >
-          {isUser ? <User size={16} /> : <Bot size={16} />}
+          {isUser ? (
+            <User size={16} />
+          ) : (
+            <img 
+              src="/domo-square-logo.png" 
+              alt="Bot" 
+              className="h-full w-full object-cover"
+            />
+          )}
         </div>
 
         {/* Message Content */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 min-w-0 max-w-full">
           <div
-            className={`px-5 py-3.5 rounded-2xl shadow-sm text-sm leading-relaxed whitespace-pre-wrap ${
+            className={`px-5 py-3.5 rounded-2xl shadow-sm text-sm leading-relaxed ${
               isUser
                 ? 'bg-brand-600 text-white rounded-tr-none'
                 : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
             }`}
           >
-            {message.text}
+            {isUser ? (
+              <div className="whitespace-pre-wrap">{message.text}</div>
+            ) : (
+              <ReactMarkdown 
+                className="prose prose-sm prose-slate max-w-none 
+                  prose-headings:font-semibold prose-headings:text-slate-800 prose-headings:mb-2 prose-headings:mt-4 first:prose-headings:mt-0
+                  prose-p:text-slate-700 prose-p:leading-relaxed prose-p:mb-3 last:prose-p:mb-0
+                  prose-strong:text-slate-900 prose-strong:font-semibold
+                  prose-ul:my-3 prose-ul:list-disc prose-ul:pl-4
+                  prose-li:text-slate-700 prose-li:mb-1
+                  prose-code:text-brand-700 prose-code:bg-brand-50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
+                  prose-pre:bg-slate-50 prose-pre:border prose-pre:border-slate-200 prose-pre:text-slate-800 prose-pre:rounded-lg
+                  prose-a:text-brand-600 prose-a:no-underline hover:prose-a:underline"
+              >
+                {message.text}
+              </ReactMarkdown>
+            )}
           </div>
 
           {/* Sources Footnote (Bot only) */}

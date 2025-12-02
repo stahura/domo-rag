@@ -1,15 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Database, MessageSquare, Loader2, ChevronDown, Check, FileText } from 'lucide-react';
 import { Message, Sender, Fileset } from './types';
-import { handleRagChat } from './services/domoService';
+import { handleRagChat, getFilesets, DEFAULT_FILESET_ID } from './services/domoService';
 import ChatBubble from './components/ChatBubble';
 import TypingIndicator from './components/TypingIndicator';
 
 // Available filesets (API integration point for future)
-const FILESETS: Fileset[] = [
-  { id: 'b0b29ed0-d279-4258-b2d7-d3e8101f54e5', name: 'Default Knowledge Base' },
-  { id: 'sales-2023', name: 'Q4 Sales Reports' },
-  { id: 'hr-policies', name: 'HR Employee Handbook' },
+const DEFAULT_FILESETS: Fileset[] = [
+  { id: DEFAULT_FILESET_ID, name: 'Nissan Pathfinder Manual' },
 ];
 
 const App: React.FC = () => {
@@ -23,20 +21,44 @@ const App: React.FC = () => {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedFileSet, setSelectedFileSet] = useState<string>(FILESETS[0].id);
+  const [filesets, setFilesets] = useState<Fileset[]>(DEFAULT_FILESETS);
+  const [selectedFileSet, setSelectedFileSet] = useState<string>(DEFAULT_FILESETS[0].id);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  // Load filesets on mount
+  useEffect(() => {
+    const loadFilesets = async () => {
+      const fetchedFilesets = await getFilesets();
+      if (fetchedFilesets.length > 0) {
+        // Transform API response to Fileset type if needed, assuming they match closely
+        const mappedFilesets: Fileset[] = fetchedFilesets
+          .filter((fs: any) => fs.id !== DEFAULT_FILESET_ID) // Deduplicate default fileset
+          .map((fs: any) => ({
+            id: fs.id, 
+            name: fs.name
+          }));
+        
+        // If we want to merge with default or replace, let's just prepend default for now
+        setFilesets([...DEFAULT_FILESETS, ...mappedFilesets]);
+      }
+    };
+    loadFilesets();
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -95,7 +117,7 @@ const App: React.FC = () => {
     }
   };
 
-  const selectedFilesetName = FILESETS.find(f => f.id === selectedFileSet)?.name || 'Select Fileset';
+  const selectedFilesetName = filesets.find(f => f.id === selectedFileSet)?.name || 'Select Fileset';
 
   return (
     <div className="flex flex-col h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
@@ -103,11 +125,7 @@ const App: React.FC = () => {
       {/* Header with Fileset Dropdown */}
       <header className="flex-none bg-white border-b border-slate-200 shadow-sm z-30 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-3 text-brand-600">
-          <Database size={28} className="text-brand-500" />
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-800">Ryuu Assistant</h1>
-            <p className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">RAG Enabled</p>
-          </div>
+          <img src="/domo-logo.png" alt="Domo Logo" className="h-12 w-auto object-contain" />
         </div>
 
         {/* Fileset Selector Dropdown */}
@@ -129,7 +147,7 @@ const App: React.FC = () => {
                 Select Knowledge Base
               </div>
               <div className="max-h-64 overflow-y-auto py-1">
-                {FILESETS.map((fs) => (
+                {filesets.map((fs) => (
                   <button
                     key={fs.id}
                     onClick={() => {
@@ -159,7 +177,11 @@ const App: React.FC = () => {
       <main className="flex-1 flex flex-col relative overflow-hidden">
         
         {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth bg-gradient-to-b from-slate-50 to-white" id="chat-container">
+        <div 
+          ref={chatContainerRef}
+          className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth bg-gradient-to-b from-slate-50 to-white" 
+          id="chat-container"
+        >
           <div className="max-w-3xl mx-auto pt-4">
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full text-slate-300 mt-20">
@@ -193,7 +215,7 @@ const App: React.FC = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask a question about your documents..."
-                className="w-full bg-transparent border-none focus:ring-0 py-4 px-4 text-slate-700 placeholder-slate-400 text-base"
+                className="w-full bg-transparent border-none focus:ring-0 outline-none focus:outline-none py-4 px-4 text-slate-700 placeholder-slate-400 text-base"
                 disabled={isLoading}
               />
               <button
@@ -211,7 +233,7 @@ const App: React.FC = () => {
             <div className="text-center mt-3">
               <p className="text-[10px] text-slate-400 flex items-center justify-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                Connected to {FILESETS.find(f => f.id === selectedFileSet)?.name}
+                Connected to {filesets.find(f => f.id === selectedFileSet)?.name}
               </p>
             </div>
           </div>

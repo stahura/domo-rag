@@ -1,28 +1,63 @@
 import { RagResponse, AiResponse } from '../types';
+import domo from 'ryuu.js';
 
-const DEFAULT_FILESET_ID = 'b0b29ed0-d279-4258-b2d7-d3e8101f54e5';
+// const DEFAULT_FILESET_PATH = '2019-nissan-pathfinder-owner-manual.pdf';
+const DEFAULT_FILESET_PATH = '';
+export const DEFAULT_FILESET_ID = 'b0b29ed0-d279-4258-b2d7-d3e8101f54e5';
+
+/**
+ * Fetches the list of available filesets (AI enabled).
+ */
+export const getFilesets = async (): Promise<any[]> => {
+  try {
+    const body = {
+      // Sort by name in ascending order
+      fieldSort: [
+        {
+          field: 'name',
+          order: 'ASC',
+        },
+      ],
+      // Filter FileSet by ai_enabled = true
+      filters: [
+        {
+          field: 'ai_enabled',
+          value: [true],
+          operator: 'EQUALS',
+        },
+      ],
+    };
+
+    // Ryuu.js call to Filesets Search API
+    const response = await domo.post('/domo/files/v1/filesets/search', body) as any;
+    return response.fileSets || [];
+  } catch (error) {
+    console.error('Error fetching filesets:', error);
+    return [];
+  }
+};
 
 /**
  * Searches documents using the RAG endpoint.
+ * fileSetPath: string = DEFAULT_FILESET_PATH,
  */
 export const searchDocuments = async (
   query: string,
   fileSetId: string = DEFAULT_FILESET_ID,
-  topk: number = 3
+  topK: number = 1
 ): Promise<RagResponse> => {
   try {
-    const inputParameters = {
+    // New endpoint structure based on user request
+    const endpoint = `/domo/files/v1/filesets/${fileSetId}/query`;
+    const payload = {
       query,
-      fileSet: fileSetId,
-      topk,
+      directoryPath: "",
+      topK,
     };
 
-    // Ryuu.js call to Code Engine
-    const data = await domo.post(
-      `/domo/codeengine/v2/packages/rag`,
-      inputParameters
-    );
-    return data as RagResponse;
+    // Ryuu.js call to Filesets API
+    const data = await domo.post(endpoint, payload);
+    return data as unknown as RagResponse;
   } catch (error) {
     console.error('Error searching documents:', error);
     // Return empty matches on error to allow graceful degradation (chat without context)
@@ -41,7 +76,7 @@ export const generateAiResponse = async (prompt: string): Promise<string> => {
 
     // Ryuu.js call to AI Service
     const response = await domo.post(`/domo/ai/v1/text/generation`, body);
-    const aiResponse = response as AiResponse;
+    const aiResponse = response as unknown as AiResponse;
 
     if (aiResponse.choices && aiResponse.choices.length > 0) {
       return aiResponse.choices[0].output;
