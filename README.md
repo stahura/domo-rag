@@ -1,5 +1,7 @@
 # Ryuu RAG Assistant
 
+![Ryuu RAG Assistant Screenshot](app-screenshot.png)
+
 A Retrieval-Augmented Generation (RAG) chat application built for Domo. This assistant allows users to chat with their documents stored in Domo Filesets using Domo's AI and Code Engine services.
 
 ## Features
