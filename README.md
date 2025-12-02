@@ -1,4 +1,4 @@
-# Ryuu RAG Assistant
+# Domo Filesets RAG Assistant
 
 ![Ryuu RAG Assistant Screenshot](app-screenshot.png)
 
