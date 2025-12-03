@@ -17,7 +17,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
       } mb-6 animate-fade-in-up`}
     >
       <div
-        className={`flex max-w-[85%] md:max-w-[75%] gap-3 ${
+        className={`flex max-w-[85%] gap-3 ${
           isUser ? 'flex-row-reverse' : 'flex-row'
         }`}
       >
@@ -50,8 +50,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
             {isUser ? (
               <div className="whitespace-pre-wrap">{message.text}</div>
             ) : (
-              <ReactMarkdown 
-                className="prose prose-sm prose-slate max-w-none 
+              <div className="prose prose-sm prose-slate max-w-none 
                   prose-headings:font-semibold prose-headings:text-slate-800 prose-headings:mb-2 prose-headings:mt-4 first:prose-headings:mt-0
                   prose-p:text-slate-700 prose-p:leading-relaxed prose-p:mb-3 last:prose-p:mb-0
                   prose-strong:text-slate-900 prose-strong:font-semibold
@@ -59,10 +58,11 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
                   prose-li:text-slate-700 prose-li:mb-1
                   prose-code:text-brand-700 prose-code:bg-brand-50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
                   prose-pre:bg-slate-50 prose-pre:border prose-pre:border-slate-200 prose-pre:text-slate-800 prose-pre:rounded-lg
-                  prose-a:text-brand-600 prose-a:no-underline hover:prose-a:underline"
-              >
-                {message.text}
-              </ReactMarkdown>
+                  prose-a:text-brand-600 prose-a:no-underline hover:prose-a:underline">
+                <ReactMarkdown>
+                  {message.text}
+                </ReactMarkdown>
+              </div>
             )}
           </div>
 
